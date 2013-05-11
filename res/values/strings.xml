@@ -4,5 +4,9 @@
     <string name="app_name">muc13_02_BachNigsch</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_list_btserver">ListBTServerActivity</string>
+    <string name="bListServer">Show Server</string>
+    <string name="bStartServer">Start Server</string>
+    <string name="title_activity_starting_server">StartingServerActivity</string>
 
 </resources>
