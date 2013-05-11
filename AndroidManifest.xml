@@ -7,8 +7,9 @@
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="17" />
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <application
         android:allowBackup="true"
@@ -26,7 +27,19 @@
         </activity>
         <activity
             android:name="com.example.muc13_02_bachnigsch.ListBTServerActivity"
-            android:label="@string/title_activity_list_btserver" >
+            android:label="@string/title_activity_list_btserver"
+            android:parentActivityName="com.example.muc13_02_bachnigsch.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.muc13_02_bachnigsch.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.example.muc13_02_bachnigsch.StartingServerActivity"
+            android:label="@string/title_activity_starting_server"
+            android:parentActivityName="com.example.muc13_02_bachnigsch.ListBTServerActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.muc13_02_bachnigsch.ListBTServerActivity" />
         </activity>
     </application>
 

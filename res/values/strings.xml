@@ -6,5 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_list_btserver">ListBTServerActivity</string>
     <string name="bListServer">Show Server</string>
+    <string name="bStartServer">Start Server</string>
+    <string name="title_activity_starting_server">StartingServerActivity</string>
 
 </resources>
