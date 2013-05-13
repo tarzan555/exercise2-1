@@ -28,7 +28,7 @@
         <activity
             android:name="com.example.muc13_02_bachnigsch.ListBTServerActivity"
             android:label="@string/title_activity_list_btserver"
-            android:parentActivityName="com.example.muc13_02_bachnigsch.MainActivity">
+            android:parentActivityName="com.example.muc13_02_bachnigsch.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.muc13_02_bachnigsch.MainActivity" />
@@ -40,6 +40,10 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.muc13_02_bachnigsch.ListBTServerActivity" />
+        </activity>
+        <activity
+            android:name="com.example.muc13_02_bachnigsch.GameActivity"
+            android:label="@string/title_activity_game" >
         </activity>
     </application>
 
