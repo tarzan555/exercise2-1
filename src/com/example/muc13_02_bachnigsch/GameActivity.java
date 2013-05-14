@@ -1,11 +1,10 @@
 package com.example.muc13_02_bachnigsch;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.TextView;
 
 /**
  * 
@@ -23,23 +22,17 @@ public class GameActivity extends Activity {
 	
 	public void gestureTest (View view){
 		
-		List<String> gestures = gestureHandler.recordGesture();
-	
-		System.out.println("Gesten: " + gestures);
+		System.out.println("Geste: " + gestureHandler.getGestureName());
+		
+		TextView textView;
+		textView = (TextView)findViewById(R.id.textView2);
+		textView.setText("Geste: " + gestureHandler.getGestureName());
 	}
-	
-	
-	
-	
-	
-	
-	
-	
+
 	
 	/**
 	 * Activity Stuff
 	 */
-	
 	
 	
 	@Override
@@ -64,8 +57,6 @@ public class GameActivity extends Activity {
 		return true;
 	}
 	
-	
-	
 	@Override
 	protected void onPause() {
 		super.onPause();
@@ -75,6 +66,4 @@ public class GameActivity extends Activity {
 
 	}
 	
-	
-
 }
