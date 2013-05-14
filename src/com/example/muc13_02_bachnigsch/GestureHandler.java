@@ -32,22 +32,22 @@ public class GestureHandler   {
 	public GestureHandler(GameActivity gameActivity) {
 		this.gameActivity = gameActivity;
 	}
-	
-	
-	
+
 	
 	/**
 	 *  Gesture Stuff
 	 */
 
 	IGestureRecognitionService mRecService;
+	String gesture;
 	
 	//create gestureListener
 	IBinder mGestureListenerStub = new IGestureRecognitionListener.Stub() {
 		@Override
 		public void onGestureRecognized(Distribution distr) {
-			String gesture = distr.getBestMatch();
+			gesture = distr.getBestMatch();
 			double distance = distr.getBestDistance();
+			
 		}
 
 		@Override
@@ -96,33 +96,9 @@ public class GestureHandler   {
 	};
 	
 	
-	
-	
-	public List<String> recordGesture(){
-		
-
-		try {
-			
-			// start the recognition service in training modus. New performed gestures 
-			// are added to the training set with name trainingSetName. The label of 
-			// the new trained gesture is gesture Name.
-			mRecService.startLearnMode("muc", "gesture");
-			return mRecService.getGestureList("muc");
-			
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-		
-	
+	public String getGestureName(){
+		return gesture;
 	}
-	
-	
-	
-	
-	
-
 	
 
 	/**
@@ -150,17 +126,6 @@ public class GestureHandler   {
 		gameActivity.unbindService(mGestureConn);
 	}
 	
-	
 
-	
-
-
-	
-	
-	
-	
-	
-	
-	
 
 }
