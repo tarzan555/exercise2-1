@@ -25,5 +25,10 @@ public class MainActivity extends Activity {
 		Intent intent = new Intent(this, ListBTServerActivity.class);
 		startActivity(intent);
 	}
+	
+	public void gestureTest(View view) {
+		Intent intent = new Intent(this, GameActivity.class);
+		startActivity(intent);
+	}
 
 }

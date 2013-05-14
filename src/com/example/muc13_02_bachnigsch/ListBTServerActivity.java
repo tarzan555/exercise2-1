@@ -1,13 +1,20 @@
 package com.example.muc13_02_bachnigsch;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -15,6 +22,7 @@ import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -33,8 +41,11 @@ public class ListBTServerActivity extends Activity {
 
     private BluetoothAdapter mBTAdapter;
     private final int REQUEST_ENABLE_BT = 17;
-    String[] mBTDevices;
     ArrayAdapter<String> mArrayAdapter;
+    List<BluetoothDevice> mBTDevices = new LinkedList<BluetoothDevice>() ;
+    BluetoothSocket mmSocket;
+
+    
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 	// TODO: remove
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
@@ -67,7 +78,12 @@ public class ListBTServerActivity extends Activity {
 			    "4080ad8d-8ba2-4846-8803-a3206a8975be")) {
 			mArrayAdapter.add(device.getName() + "\n"
 				+ device.getAddress());
+			
+			// add bluetooth device to list
+			mBTDevices.add(device);
+			
 		    }
+		    
 		}
 	    }
 	}
@@ -80,11 +96,22 @@ public class ListBTServerActivity extends Activity {
 	// Show the Up button in the action bar.
 	setupActionBar();
 
-	mBTDevices = new String[10];
+
 	mArrayAdapter = new ArrayAdapter<String>(this,
 		android.R.layout.simple_list_item_1);
 	ListView mlistServerView = (ListView) findViewById(R.id.listServerView);
 	mlistServerView.setAdapter(mArrayAdapter);
+	
+	mlistServerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> arg0, View arg1, int position,
+				long id) {
+			
+			BluetoothDevice device = mBTDevices.get((int) id);
+			new ConnectTask().execute(device);
+			
+		}});
 
 	// Register the BroadcastReceiver
 	IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -129,11 +156,9 @@ public class ListBTServerActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-	// TODO Auto-generated method stub
-	super.onDestroy();
-
-	// unregister
-	unregisterReceiver(mReceiver);
+		super.onDestroy();
+		// unregister
+		unregisterReceiver(mReceiver);
     }
 
     /**
@@ -199,6 +224,13 @@ public class ListBTServerActivity extends Activity {
 	    }
 	}
     }
+    
+    // start game activity
+    public void callGameActivity(){
+		Intent intent = new Intent(this,GameActivity.class);
+		startActivity(intent);
+    }
+    
 
     /**
      * 'startServer'-button's onclicked-method
@@ -210,4 +242,79 @@ public class ListBTServerActivity extends Activity {
 	startActivity(intent);
     }
 
+    private class ConnectTask extends AsyncTask<BluetoothDevice, Void, Void>{
+
+    	@Override
+    	protected void onPostExecute(Void result) {
+    	    // call super-method
+    	    super.onPostExecute(result);
+
+    	    Toast toast = Toast.makeText(getApplicationContext(),
+    		    "Connection established!", Toast.LENGTH_LONG);
+    	    toast.show();
+    	}
+    	
+    	
+    	
+		@Override
+		protected Void doInBackground(BluetoothDevice... devices) {
+			
+			assert(devices.length == 1);
+			
+			BluetoothDevice device = devices[0];
+			BluetoothSocket tmp = null;
+
+			try {
+	            // MY_UUID is the app's UUID string, also used by the server code
+	            tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("4080ad8d-8ba2-4846-8803-a3206a8975be"));
+	        } catch (IOException e) { }
+	        mmSocket = tmp;
+
+	     // Cancel discovery because it will slow down the connection
+	        mBTAdapter.cancelDiscovery();
+	 
+	        try {
+	            // Connect the device through the socket. This will block
+	            // until it succeeds or throws an exception
+	            mmSocket.connect();
+	        } catch (IOException connectException) {
+	            // Unable to connect; close the socket and get out
+	            try {
+	                mmSocket.close();
+	            } catch (IOException closeException) { }
+	            return null;
+	        }
+	        
+	        
+	        
+	 
+	        // Do work to manage the connection (in a separate thread)
+	        
+	        // TODO: implement
+	        //manageConnectedSocket(mmSocket);
+	    	
+	        callGameActivity();
+			
+			
+			return null;
+		}
+		
+		
+
+		@Override
+		protected void onCancelled() {
+		    // call super-method
+		    super.onCancelled();
+
+		    try {
+			mmSocket.close();
+		    } catch (IOException e) {
+			//
+		    }
+		}
+    	
+    }
+    
+    
+    
 }
