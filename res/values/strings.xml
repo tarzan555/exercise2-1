@@ -9,5 +9,6 @@
     <string name="bStartServer">Start Server</string>
     <string name="title_activity_starting_server">StartingServerActivity</string>
     <string name="title_activity_game">GameActivity</string>
+    <string name="title_activity_gesture">GestureActivity</string>
 
 </resources>

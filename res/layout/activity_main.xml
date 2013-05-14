@@ -24,4 +24,14 @@
         android:onClick="listServer"
         android:text="@string/bListServer" />
 
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/buttonListServer"
+        android:layout_below="@+id/buttonListServer"
+        android:layout_marginTop="68dp"
+        android:onClick="gestureTest"
+        android:text="Gesturetest" />
+
 </RelativeLayout>

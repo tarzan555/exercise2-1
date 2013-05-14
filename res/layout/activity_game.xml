@@ -9,8 +9,19 @@
     tools:context=".GameActivity" >
 
     <TextView
+        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="hello_martin" />
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="72dp"
+        android:onClick="gestureTest"
+        android:text="Record Gesture" />
 
 </RelativeLayout>

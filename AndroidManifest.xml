@@ -45,6 +45,10 @@
             android:name="com.example.muc13_02_bachnigsch.GameActivity"
             android:label="@string/title_activity_game" >
         </activity>
+        <activity
+            android:name="com.example.muc13_02_bachnigsch.GestureHandler"
+            android:label="@string/title_activity_gesture" >
+        </activity>
     </application>
 
 </manifest>
