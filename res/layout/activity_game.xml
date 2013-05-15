@@ -12,7 +12,17 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="hello_martin" />
+        android:text="Herzlich Willkommen beim UbiGame!" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_below="@+id/textView2"
+        android:layout_marginTop="52dp"
+        android:text="Large Text"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Button
         android:id="@+id/button1"
@@ -20,16 +30,26 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/textView1"
         android:layout_below="@+id/textView1"
-        android:layout_marginTop="72dp"
+        android:layout_marginTop="31dp"
         android:onClick="gestureTest"
-        android:text="Zeige Geste" />
+        android:text="Gestentest" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_below="@+id/button1"
+        android:onClick="startGame"
+        android:text="Spiel starten" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/button1"
-        android:layout_centerVertical="true"
+        android:layout_below="@+id/button2"
+        android:layout_marginTop="31dp"
         android:text="Large Text"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
