@@ -1,5 +1,7 @@
 package com.example.muc13_02_bachnigsch;
 
+import java.util.List;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import android.app.Activity;
@@ -27,9 +29,19 @@ public class GameActivity extends Activity {
 	
 	public void gestureTest (View view){
 		textView2 = (TextView)findViewById(R.id.textView2);
-		TreeMap mTreeMap = gestureHandler.getGesture();
-		mTreeMap.subMap(fromInclusive, toExclusive); //bla und noch ein test
-		textView2.setText("Geste: " + gestureHandler.getGesture().);
+		TreeMap <Long,String> mTreeMap  = gestureHandler.getGesture();
+		long mTimeStamp = System.currentTimeMillis();
+		SortedMap <Long, String> mSubMap = mTreeMap.subMap(mTimeStamp - 500, mTimeStamp); 
+		
+		
+		StringBuilder builder = new StringBuilder();
+		
+		for (Object elem : mSubMap.keySet()){
+			builder.append(mSubMap.get(elem) + ", ");
+		}
+		
+		
+		textView2.setText("Geste: " + builder.toString());
 	}
 
 	
@@ -66,7 +78,7 @@ public class GameActivity extends Activity {
 				textView2.setText("Du bist dran - mache eine Geste!");
 				
 				// get performed gesture from Gesture Handler
-				gestureName = gestureHandler.getGestureName();
+				//gestureName = gestureHandler.getGestureName();
 				
 				// TODO: send performed gesture name via bluetooth
 							
@@ -111,7 +123,7 @@ public class GameActivity extends Activity {
 				textView2.setText("Geste empfangen - wiederhole sie!");
 	
 				// get performed gesture from gesture handler
-				gestureName = gestureHandler.getGestureName();
+				//gestureName = gestureHandler.getGestureName();
 				
 				
 				// gestures are according - player 2 wins

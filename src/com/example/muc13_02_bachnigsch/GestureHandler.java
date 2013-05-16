@@ -74,19 +74,15 @@ public class GestureHandler   {
 			try {
 				// register listener
 				mRecService.registerListener(IGestureRecognitionListener.Stub.asInterface(mGestureListenerStub));
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {			
 				// start the recognition service in recognition mode with given training set. 
-				// new performed gestures are classified with the training set as base.
 				mRecService.startClassificationMode("muc");
+				System.out.println(mRecService.getGestureList("muc"));
 				
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 		}
 
 		@Override
@@ -97,7 +93,7 @@ public class GestureHandler   {
 	};
 	
 	
-	public TreeMap getGesture(){
+	public TreeMap<Long, String> getGesture(){
 		return mTreeMap;
 	}
 	
