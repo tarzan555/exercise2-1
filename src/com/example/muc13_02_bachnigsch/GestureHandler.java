@@ -1,16 +1,13 @@
 package com.example.muc13_02_bachnigsch;
 
-import java.util.List;
+import java.util.TreeMap;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.view.Menu;
 import de.dfki.ccaal.gestures.Distribution;
 import de.dfki.ccaal.gestures.IGestureRecognitionListener;
 import de.dfki.ccaal.gestures.IGestureRecognitionService;
@@ -27,6 +24,8 @@ import de.dfki.ccaal.gestures.IGestureRecognitionService;
 public class GestureHandler   {
 	
 	GameActivity gameActivity;
+	long mTimeStamp;
+	TreeMap< Long, String> mTreeMap = new TreeMap< Long, String>();
 	
 	//Constructor
 	public GestureHandler(GameActivity gameActivity) {
@@ -39,15 +38,17 @@ public class GestureHandler   {
 	 */
 
 	IGestureRecognitionService mRecService;
-	String gesture;
+	String mGestureName;
 	
 	//create gestureListener
 	IBinder mGestureListenerStub = new IGestureRecognitionListener.Stub() {
 		@Override
 		public void onGestureRecognized(Distribution distr) {
-			gesture = distr.getBestMatch();
-			double distance = distr.getBestDistance();
-			
+			mGestureName = distr.getBestMatch();
+			mTimeStamp = System.currentTimeMillis();
+			// put gesture name with timestamp into treemap
+			mTreeMap.put(mTimeStamp, mGestureName);
+				
 		}
 
 		@Override
@@ -96,8 +97,8 @@ public class GestureHandler   {
 	};
 	
 	
-	public String getGestureName(){
-		return gesture;
+	public TreeMap getGesture(){
+		return mTreeMap;
 	}
 	
 

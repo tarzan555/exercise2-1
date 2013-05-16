@@ -1,5 +1,7 @@
 package com.example.muc13_02_bachnigsch;
 
+import java.util.TreeMap;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -25,7 +27,9 @@ public class GameActivity extends Activity {
 	
 	public void gestureTest (View view){
 		textView2 = (TextView)findViewById(R.id.textView2);
-		textView2.setText("Geste: " + gestureHandler.getGestureName());
+		TreeMap mTreeMap = gestureHandler.getGesture();
+		mTreeMap.subMap(fromInclusive, toExclusive)
+		textView2.setText("Geste: " + gestureHandler.getGesture().);
 	}
 
 	
