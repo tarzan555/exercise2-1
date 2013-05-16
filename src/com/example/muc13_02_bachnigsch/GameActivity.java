@@ -28,7 +28,7 @@ public class GameActivity extends Activity {
 	public void gestureTest (View view){
 		textView2 = (TextView)findViewById(R.id.textView2);
 		TreeMap mTreeMap = gestureHandler.getGesture();
-		mTreeMap.subMap(fromInclusive, toExclusive)
+		mTreeMap.subMap(fromInclusive, toExclusive); //bla
 		textView2.setText("Geste: " + gestureHandler.getGesture().);
 	}
 
