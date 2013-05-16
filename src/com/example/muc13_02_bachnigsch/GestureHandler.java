@@ -1,5 +1,6 @@
 package com.example.muc13_02_bachnigsch;
 
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import android.content.ComponentName;
@@ -93,8 +94,26 @@ public class GestureHandler   {
 	};
 	
 	
+	// method that returns tree map of gestures
 	public TreeMap<Long, String> getGesture(){
 		return mTreeMap;
+	}
+	
+	
+	// method that returns performed gestures within a timeslot
+	public String getPerformedGestures(long timeSlot){
+		long mTimeStamp = System.currentTimeMillis();
+		SortedMap <Long, String> mSubMap = mTreeMap.subMap(mTimeStamp - timeSlot, mTimeStamp); 
+		StringBuilder builder = new StringBuilder();
+		for (Long key : mSubMap.keySet()){
+			builder.append(mSubMap.get(key) + " ");
+		}
+		return builder.toString();
+	}
+	
+	// method that returns last performed gesture
+	public String getLastPerformedGesture(){
+		return mTreeMap.get(mTreeMap.lastKey());
 	}
 	
 
