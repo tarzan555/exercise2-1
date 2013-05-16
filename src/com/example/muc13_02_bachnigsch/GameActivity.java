@@ -28,7 +28,7 @@ public class GameActivity extends Activity {
 	public void gestureTest (View view){
 		textView2 = (TextView)findViewById(R.id.textView2);
 		TreeMap mTreeMap = gestureHandler.getGesture();
-		mTreeMap.subMap(fromInclusive, toExclusive); //bla hallo penis
+		mTreeMap.subMap(fromInclusive, toExclusive); //bla und noch ein test
 		textView2.setText("Geste: " + gestureHandler.getGesture().);
 	}
 
