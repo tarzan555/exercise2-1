@@ -20,16 +20,20 @@ public class GameActivity extends Activity {
 	GestureHandler gestureHandler = new GestureHandler(this);
 	TextView textView2;
 	TextView textView3;
-	String gestureName;
+	String performedGestureName;
+	String performedGestureNames;
 	String receivedGestureName;
+	String receivedGestureNames;
 	
+	
+	// method called on button "Gestentest" clicked
 	public void gestureTest (View view){
 		textView2 = (TextView)findViewById(R.id.textView2);
-		textView2.setText("Geste: " + gestureHandler.getGestureName());
+		textView2.setText("Geste: " + gestureHandler.getPerformedGestures(5000));
 	}
+	
+	
 
-	
-	
 	/**
 	 * Game Logic
 	 */
@@ -45,7 +49,7 @@ public class GameActivity extends Activity {
 		// TODO: get to know wether your are server or client
 		
 		// initaial situation: server is player 1, client is player 2
-		player = 1; // or 2
+		player = 1; 
 		
 		
 		// play loop
@@ -62,18 +66,17 @@ public class GameActivity extends Activity {
 				textView2.setText("Du bist dran - mache eine Geste!");
 				
 				// get performed gesture from Gesture Handler
-				gestureName = gestureHandler.getGestureName();
+				performedGestureName = gestureHandler.getLastPerformedGesture();
 				
 				// TODO: send performed gesture name via bluetooth
 							
 				// TODO: recieve repeated gesture name via bluetooth
-				
-				receivedGestureName = "example";
+				receivedGestureNames = "right left up";
 				
 				// compare receied with performed gesture
 				
 				// player 1 looses
-				if (receivedGestureName.equals(gestureName)){
+				if (receivedGestureNames.contains(performedGestureName)){
 					// in next loop you are player 2
 					player = 2;			
 				}
@@ -83,11 +86,9 @@ public class GameActivity extends Activity {
 					points ++;
 					// in next loop you are player 1
 					player = 1;
-				}
-				
+				}				
 				textView3 = (TextView)findViewById(R.id.textView3);
-				textView3.setText("Du hast " + points + " Punkte");
-				
+				textView3.setText("Du hast " + points + " Punkte");				
 			}
 			
 			
@@ -102,21 +103,19 @@ public class GameActivity extends Activity {
 				
 				// TODO: receive gesture via bluetooth
 				// wait for gesture via bluetooth from other player
-				receivedGestureName = "example";
+				receivedGestureName = "right";
 				
 				textView2.setText("Geste empfangen - wiederhole sie!");
 	
-				// get performed gesture from gesture handler
-				gestureName = gestureHandler.getGestureName();
+				// get performed gestures
+				performedGestureNames = gestureHandler.getPerformedGestures(5000);
 				
 				
 				// gestures are according - player 2 wins
-				if (receivedGestureName.equals(gestureName)){
+				if (performedGestureNames.contains(receivedGestureName)){
 					points ++;
 					// in next loop you are player 1
-					player = 1;
-					
-					
+					player = 1;					
 				}
 				
 				// gestures are different - player 2 looses
@@ -127,17 +126,9 @@ public class GameActivity extends Activity {
 				
 				textView3 = (TextView)findViewById(R.id.textView3);
 				textView3.setText("Du hast " + points + " Punkte");
-			}
-			
-			
+			}			
 		}
 	}
-	
-	
-	
-	
-	
-	
 	
 	
 	
@@ -175,7 +166,5 @@ public class GameActivity extends Activity {
 		
 		// unbind service
 		gestureHandler.unbind();
-
-	}
-	
+	}	
 }

@@ -1,16 +1,14 @@
 package com.example.muc13_02_bachnigsch;
 
-import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.view.Menu;
 import de.dfki.ccaal.gestures.Distribution;
 import de.dfki.ccaal.gestures.IGestureRecognitionListener;
 import de.dfki.ccaal.gestures.IGestureRecognitionService;
@@ -27,6 +25,8 @@ import de.dfki.ccaal.gestures.IGestureRecognitionService;
 public class GestureHandler   {
 	
 	GameActivity gameActivity;
+	long mTimeStamp;
+	TreeMap< Long, String> mTreeMap = new TreeMap< Long, String>();
 	
 	//Constructor
 	public GestureHandler(GameActivity gameActivity) {
@@ -39,15 +39,17 @@ public class GestureHandler   {
 	 */
 
 	IGestureRecognitionService mRecService;
-	String gesture;
+	String mGestureName;
 	
 	//create gestureListener
 	IBinder mGestureListenerStub = new IGestureRecognitionListener.Stub() {
 		@Override
 		public void onGestureRecognized(Distribution distr) {
-			gesture = distr.getBestMatch();
-			double distance = distr.getBestDistance();
-			
+			mGestureName = distr.getBestMatch();
+			mTimeStamp = System.currentTimeMillis();
+			// put gesture name with timestamp into treemap
+			mTreeMap.put(mTimeStamp, mGestureName);
+				
 		}
 
 		@Override
@@ -73,19 +75,15 @@ public class GestureHandler   {
 			try {
 				// register listener
 				mRecService.registerListener(IGestureRecognitionListener.Stub.asInterface(mGestureListenerStub));
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {			
 				// start the recognition service in recognition mode with given training set. 
-				// new performed gestures are classified with the training set as base.
 				mRecService.startClassificationMode("muc");
+				System.out.println(mRecService.getGestureList("muc"));
 				
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 		}
 
 		@Override
@@ -96,8 +94,26 @@ public class GestureHandler   {
 	};
 	
 	
-	public String getGestureName(){
-		return gesture;
+	// method that returns tree map of gestures
+	public TreeMap<Long, String> getGesture(){
+		return mTreeMap;
+	}
+	
+	
+	// method that returns performed gestures within a timeslot
+	public String getPerformedGestures(long timeSlot){
+		long mTimeStamp = System.currentTimeMillis();
+		SortedMap <Long, String> mSubMap = mTreeMap.subMap(mTimeStamp - timeSlot, mTimeStamp); 
+		StringBuilder builder = new StringBuilder();
+		for (Long key : mSubMap.keySet()){
+			builder.append(mSubMap.get(key) + " ");
+		}
+		return builder.toString();
+	}
+	
+	// method that returns last performed gesture
+	public String getLastPerformedGesture(){
+		return mTreeMap.get(mTreeMap.lastKey());
 	}
 	
 
