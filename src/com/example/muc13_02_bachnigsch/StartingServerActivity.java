@@ -26,6 +26,8 @@ import android.widget.Toast;
  */
 public class StartingServerActivity extends Activity {
 
+    public static final String GAMEUUID = "4080ad8d-8ba2-4846-8803-a3206a8975be";
+    
     private final int REQUEST_DISCOVERABLE_BT = 23;
     private TextView statusText;
     private BluetoothAdapter mBTAdapter;
@@ -55,9 +57,10 @@ public class StartingServerActivity extends Activity {
 	}
 
 	// since we're starting a server, the device should be discoverable
-	// using standard duration = 120s
+	// using duration = 300s
 	Intent discoverableIntent = new Intent(
 		BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+	discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
 	startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE_BT);
 
 	// TODO: register boradcast receiver for being notified when leaving
@@ -152,8 +155,8 @@ public class StartingServerActivity extends Activity {
 		tmp = mBTAdapter
 			.listenUsingRfcommWithServiceRecord(
 				"MUCubigame",
-				UUID.fromString("4080ad8d-8ba2-4846-8803-a3206a8975be"));
-		System.out.println(UUID.fromString("4080ad8d-8ba2-4846-8803-a3206a8975be"));
+				UUID.fromString(GAMEUUID));
+		System.out.println(UUID.fromString(GAMEUUID));
 	    } catch (IOException e) {
 		System.out.println("Failed to start server");
 	    }

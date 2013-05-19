@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,51 +40,81 @@ import android.widget.Toast;
  */
 public class ListBTServerActivity extends Activity {
 
+    // Class-Name for debug output
+    private static final String TAG = "ListBTServerActivity";
+
     private BluetoothAdapter mBTAdapter;
     private final int REQUEST_ENABLE_BT = 17;
     ArrayAdapter<String> mArrayAdapter;
-    List<BluetoothDevice> mBTDevices = new LinkedList<BluetoothDevice>() ;
+    // List containing all discovered BT-devices
+    List<BluetoothDevice> mDiscoveredDevices = new LinkedList<BluetoothDevice>();
+    // List containing BT-Devices running UbiGame
+    List<BluetoothDevice> mBTDevices = new LinkedList<BluetoothDevice>();
     BluetoothSocket mmSocket;
 
-    
+    /**
+     * BroadcastReceiver handling Bluetooth-Broadcasts:
+     * 	ACTION_FOUND: adds devices to list of discovered devices
+     *  ACTION_DISCOVERY_FINISHED: starts fetching of UUIDs
+     *  ACTION_UUID: compares UUIDs to GameUUID
+     */
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+	private static final String TAG = "ListBTServerActivity-BroadcastReceiver";
+
 	// TODO: remove
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
 	public void onReceive(Context context, Intent intent) {
 	    String action = intent.getAction();
+
 	    // When discovery finds a device
+	    // add it to list of discovered devices
 	    if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 		// Get the BluetoothDevice object from the Intent
 		BluetoothDevice device = intent
 			.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-		System.out.println(device.getName() + "\n"
-			+ device.getAddress());
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-		    device.fetchUuidsWithSdp();
-		}
-		// TODO: implement for API levels lower than 15
+		Log.v(TAG,
+			"Found " + device.getName() + " ["
+				+ device.getAddress() + "]");
 
-
+		if(!mDiscoveredDevices.contains(device)) mDiscoveredDevices.add(device);
 	    }
 
-	    // getting uuids
+	    // after discovery finished => start scanning for UUIDs
+	    if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+		for (BluetoothDevice device : mDiscoveredDevices)
+		    // TODO: implement for API levels lower than 15
+		    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+			Log.v(TAG,
+				"Trying to fetch UUIDs from "
+					+ device.getName());
+			device.fetchUuidsWithSdp();
+		    }
+	    }
+
+	    // receiving array of uuids
+	    // checking for game-uuid
+	    // adding appropriate devices to game-devices list
 	    if (BluetoothDevice.ACTION_UUID.equals(action)) {
 		BluetoothDevice device = intent
 			.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 		Parcelable[] uuidExtra = intent
 			.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
+		
+		Log.v(TAG, "Received UUIDs from " + device.getName() + " => "
+			+ uuidExtra);
+		
 		for (int i = 0; uuidExtra != null && i < uuidExtra.length; i++) {
 		    if (uuidExtra[i].toString().equals(
-			    "4080ad8d-8ba2-4846-8803-a3206a8975be")) {
+			    StartingServerActivity.GAMEUUID)) {
 			mArrayAdapter.add(device.getName() + "\n"
 				+ device.getAddress());
-			
+
 			// add bluetooth device to list
 			mBTDevices.add(device);
-			
+
 		    }
-		    
+
 		}
 	    }
 	}
@@ -96,31 +127,37 @@ public class ListBTServerActivity extends Activity {
 	// Show the Up button in the action bar.
 	setupActionBar();
 
+	Log.v(TAG, "Starting Activity");
 
 	mArrayAdapter = new ArrayAdapter<String>(this,
 		android.R.layout.simple_list_item_1);
 	ListView mlistServerView = (ListView) findViewById(R.id.listServerView);
 	mlistServerView.setAdapter(mArrayAdapter);
-	
-	mlistServerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-		@Override
-		public void onItemClick(AdapterView<?> arg0, View arg1, int position,
-				long id) {
-			
+	mlistServerView
+		.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+		    @Override
+		    public void onItemClick(AdapterView<?> arg0, View arg1,
+			    int position, long id) {
+
 			BluetoothDevice device = mBTDevices.get((int) id);
 			new ConnectTask().execute(device);
-			
-		}});
+
+		    }
+		});
 
 	// Register the BroadcastReceiver
 	IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 	filter.addAction(BluetoothDevice.ACTION_UUID);
+	filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 	registerReceiver(mReceiver, filter);
 
 	/************************
 	 * BT stuff
 	 ***********************/
+
+	Log.v(TAG, "Trying to get BT-Adapter");
 
 	// Get bluetooth adapter
 	mBTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -134,6 +171,7 @@ public class ListBTServerActivity extends Activity {
 
 	// Enable BT through system settings
 	if (!mBTAdapter.isEnabled()) {
+	    Log.v(TAG, "Enabling BT");
 	    Intent enableBTIntent = new Intent(
 		    BluetoothAdapter.ACTION_REQUEST_ENABLE);
 	    startActivityForResult(enableBTIntent, REQUEST_ENABLE_BT);
@@ -141,11 +179,13 @@ public class ListBTServerActivity extends Activity {
 	    // BT is already enabled
 	    // start device Discovery
 	    if (!mBTAdapter.startDiscovery()) {
+		Log.v(TAG, "Failed to start BT Discovery");
 		Toast toast = Toast.makeText(getApplicationContext(),
 			"Failed to start BT Discovery", Toast.LENGTH_LONG);
 		toast.show();
 		finish();
 	    } else {
+		Log.v(TAG, "BT-Discovery started");
 		Toast toast = Toast.makeText(getApplicationContext(),
 			"Searching for BT-Devices...", Toast.LENGTH_LONG);
 		toast.show();
@@ -156,9 +196,9 @@ public class ListBTServerActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-		super.onDestroy();
-		// unregister
-		unregisterReceiver(mReceiver);
+	super.onDestroy();
+	// unregister
+	unregisterReceiver(mReceiver);
     }
 
     /**
@@ -224,13 +264,12 @@ public class ListBTServerActivity extends Activity {
 	    }
 	}
     }
-    
+
     // start game activity
-    public void callGameActivity(){
-		Intent intent = new Intent(this,GameActivity.class);
-		startActivity(intent);
+    public void callGameActivity() {
+	Intent intent = new Intent(this, GameActivity.class);
+	startActivity(intent);
     }
-    
 
     /**
      * 'startServer'-button's onclicked-method
@@ -242,79 +281,73 @@ public class ListBTServerActivity extends Activity {
 	startActivity(intent);
     }
 
-    private class ConnectTask extends AsyncTask<BluetoothDevice, Void, Void>{
+    private class ConnectTask extends AsyncTask<BluetoothDevice, Void, Void> {
 
-    	@Override
-    	protected void onPostExecute(Void result) {
-    	    // call super-method
-    	    super.onPostExecute(result);
+	@Override
+	protected void onPostExecute(Void result) {
+	    // call super-method
+	    super.onPostExecute(result);
 
-    	    Toast toast = Toast.makeText(getApplicationContext(),
-    		    "Connection established!", Toast.LENGTH_LONG);
-    	    toast.show();
-    	}
-    	
-    	
-    	
-		@Override
-		protected Void doInBackground(BluetoothDevice... devices) {
-			
-			assert(devices.length == 1);
-			
-			BluetoothDevice device = devices[0];
-			BluetoothSocket tmp = null;
+	    Toast toast = Toast.makeText(getApplicationContext(),
+		    "Connection established!", Toast.LENGTH_LONG);
+	    toast.show();
+	}
 
-			try {
-	            // MY_UUID is the app's UUID string, also used by the server code
-	            tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("4080ad8d-8ba2-4846-8803-a3206a8975be"));
-	        } catch (IOException e) { }
-	        mmSocket = tmp;
+	@Override
+	protected Void doInBackground(BluetoothDevice... devices) {
 
-	     // Cancel discovery because it will slow down the connection
-	        mBTAdapter.cancelDiscovery();
-	 
-	        try {
-	            // Connect the device through the socket. This will block
-	            // until it succeeds or throws an exception
-	            mmSocket.connect();
-	        } catch (IOException connectException) {
-	            // Unable to connect; close the socket and get out
-	            try {
-	                mmSocket.close();
-	            } catch (IOException closeException) { }
-	            return null;
-	        }
-	        
-	        
-	        
-	 
-	        // Do work to manage the connection (in a separate thread)
-	        
-	        // TODO: implement
-	        //manageConnectedSocket(mmSocket);
-	    	
-	        callGameActivity();
-			
-			
-			return null;
+	    assert (devices.length == 1);
+
+	    BluetoothDevice device = devices[0];
+	    BluetoothSocket tmp = null;
+
+	    try {
+		// MY_UUID is the app's UUID string, also used by the server
+		// code
+		tmp = device.createRfcommSocketToServiceRecord(UUID
+			.fromString(StartingServerActivity.GAMEUUID));
+	    } catch (IOException e) {
+	    }
+	    mmSocket = tmp;
+
+	    // Cancel discovery because it will slow down the connection
+	    mBTAdapter.cancelDiscovery();
+
+	    try {
+		// Connect the device through the socket. This will block
+		// until it succeeds or throws an exception
+		mmSocket.connect();
+	    } catch (IOException connectException) {
+		// Unable to connect; close the socket and get out
+		try {
+		    mmSocket.close();
+		} catch (IOException closeException) {
 		}
-		
-		
+		return null;
+	    }
 
-		@Override
-		protected void onCancelled() {
-		    // call super-method
-		    super.onCancelled();
+	    // Do work to manage the connection (in a separate thread)
 
-		    try {
-			mmSocket.close();
-		    } catch (IOException e) {
-			//
-		    }
-		}
-    	
+	    // TODO: implement
+	    // manageConnectedSocket(mmSocket);
+
+	    callGameActivity();
+
+	    return null;
+	}
+
+	@Override
+	protected void onCancelled() {
+	    // call super-method
+	    super.onCancelled();
+
+	    try {
+		mmSocket.close();
+	    } catch (IOException e) {
+		//
+	    }
+	}
+
     }
-    
-    
-    
+
 }
