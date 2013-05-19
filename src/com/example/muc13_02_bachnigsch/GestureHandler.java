@@ -23,24 +23,24 @@ import de.dfki.ccaal.gestures.IGestureRecognitionService;
  */
 
 public class GestureHandler   {
-	
+
 	GameActivity gameActivity;
 	long mTimeStamp;
 	TreeMap< Long, String> mTreeMap = new TreeMap< Long, String>();
-	
+
 	//Constructor
 	public GestureHandler(GameActivity gameActivity) {
 		this.gameActivity = gameActivity;
 	}
 
-	
+
 	/**
 	 *  Gesture Stuff
 	 */
 
 	IGestureRecognitionService mRecService;
 	String mGestureName;
-	
+
 	//create gestureListener
 	IBinder mGestureListenerStub = new IGestureRecognitionListener.Stub() {
 		@Override
@@ -49,24 +49,24 @@ public class GestureHandler   {
 			mTimeStamp = System.currentTimeMillis();
 			// put gesture name with timestamp into treemap
 			mTreeMap.put(mTimeStamp, mGestureName);
-				
+
 		}
 
 		@Override
 		public void onGestureLearned(String gestureName) throws RemoteException {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
 		public void onTrainingSetDeleted(String trainingSet)
 				throws RemoteException {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
+
 	};
-	
+
 	//create a service connection to the recognition service
 	private ServiceConnection mGestureConn = new ServiceConnection() {
 		@Override
@@ -78,28 +78,28 @@ public class GestureHandler   {
 				// start the recognition service in recognition mode with given training set. 
 				mRecService.startClassificationMode("muc");
 				System.out.println(mRecService.getGestureList("muc"));
-				
+
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName arg0) {
 			// TODO Auto-generated method stub
-			
+
 		}
 	};
-	
-	
+
+
 	// method that returns tree map of gestures
 	public TreeMap<Long, String> getGesture(){
 		return mTreeMap;
 	}
-	
-	
+
+
 	// method that returns performed gestures within a timeslot
 	public String getPerformedGestures(long timeSlot){
 		long mTimeStamp = System.currentTimeMillis();
@@ -110,26 +110,26 @@ public class GestureHandler   {
 		}
 		return builder.toString();
 	}
-	
+
 	// method that returns last performed gesture
 	public String getLastPerformedGesture(){
 		return mTreeMap.get(mTreeMap.lastKey());
 	}
-	
+
 
 	/**
 	 * Service Stuff
 	 */
-	
-	
+
+
 	protected void bind() {
-		
+
 		// bind service
 		Intent gestureBindIntent = new Intent("de.dfki.ccaal.gestures.GESTURE_RECOGNIZER");
 		gameActivity.bindService(gestureBindIntent, mGestureConn, Context.BIND_AUTO_CREATE);
-		
+
 	}
-	
+
 	protected void unbind(){
 		// unbind service
 		try {
@@ -141,7 +141,7 @@ public class GestureHandler   {
 		mRecService = null;
 		gameActivity.unbindService(mGestureConn);
 	}
-	
+
 
 
 }
