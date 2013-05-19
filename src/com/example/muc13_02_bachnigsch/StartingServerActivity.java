@@ -8,15 +8,21 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.muc13_02_bachnigsch.bt.ConnectedThread;
 
 /**
  * 
@@ -25,13 +31,35 @@ import android.widget.Toast;
  * 
  */
 public class StartingServerActivity extends Activity {
-
+    // static field for UUID of this app
     public static final String GAMEUUID = "4080ad8d-8ba2-4846-8803-a3206a8975be";
-    
+
     private final int REQUEST_DISCOVERABLE_BT = 23;
+
     private TextView statusText;
     private BluetoothAdapter mBTAdapter;
     private BluetoothServerSocket mBTServerSocket;
+
+    /**
+     * BroadcastReceiver for checking scan-modes of BT-Device in order to notify
+     * user as soon as device is no longer discoverable
+     */
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+	@Override
+	public void onReceive(Context context, Intent intent) {
+	    String action = intent.getAction();
+
+	    if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
+		int mode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE,
+			-1);
+		if (BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE != mode) {
+		    // device is no longer discoverable
+		    statusText.setText("Device is no longer discoverable");
+		}
+	    }
+
+	}
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +69,11 @@ public class StartingServerActivity extends Activity {
 	setupActionBar();
 
 	statusText = (TextView) findViewById(R.id.serverStatus);
+
+	// register BroadcastReceiver
+	IntentFilter filter = new IntentFilter(
+		BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+	registerReceiver(mReceiver, filter);
 
 	/************************
 	 * BT stuff
@@ -60,11 +93,9 @@ public class StartingServerActivity extends Activity {
 	// using duration = 300s
 	Intent discoverableIntent = new Intent(
 		BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-	discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+	discoverableIntent.putExtra(
+		BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
 	startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE_BT);
-
-	// TODO: register boradcast receiver for being notified when leaving
-	// discoverability mode
     }
 
     /**
@@ -72,9 +103,9 @@ public class StartingServerActivity extends Activity {
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private void setupActionBar() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-		    getActionBar().setDisplayHomeAsUpEnabled(true);
-		}
+	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+	    getActionBar().setDisplayHomeAsUpEnabled(true);
+	}
     }
 
     @Override
@@ -132,6 +163,8 @@ public class StartingServerActivity extends Activity {
      * 
      */
     private class ServerTask extends AsyncTask<Void, Void, Void> {
+	// class-name for debug output
+	private static final String TAG = "ServerTask";
 
 	@Override
 	protected void onPreExecute() {
@@ -143,22 +176,16 @@ public class StartingServerActivity extends Activity {
 
 	@Override
 	protected Void doInBackground(Void... params) {
-
-	    System.out.println("GOOO");
-	    
 	    // Use a temporary object that is later assigned to mmServerSocket,
 	    // because mmServerSocket is final
 	    BluetoothServerSocket tmp = null;
 	    try {
 		// MY_UUID is the app's UUID string, also used by the client
 		// code
-		tmp = mBTAdapter
-			.listenUsingRfcommWithServiceRecord(
-				"MUCubigame",
-				UUID.fromString(GAMEUUID));
-		System.out.println(UUID.fromString(GAMEUUID));
+		tmp = mBTAdapter.listenUsingRfcommWithServiceRecord(
+			"MUCubigame", UUID.fromString(GAMEUUID));
 	    } catch (IOException e) {
-		System.out.println("Failed to start server");
+		Log.e(TAG,"Failed to start server");
 	    }
 	    mBTServerSocket = tmp;
 
@@ -173,18 +200,19 @@ public class StartingServerActivity extends Activity {
 		// If a connection was accepted
 		if (socket != null) {
 		    // Do work to manage the connection (in a separate thread)
+		    ConnectedThread ct = new ConnectedThread(socket);
+		    Log.v(TAG, "Trying to send something...");
+		    ct.write(new String("HalliHallo"));
 		    // TODO: implement
+		    
 		    try {
 			mBTServerSocket.close();
 		    } catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		    }
 		    break;
 		}
 	    }
-	    
-	    System.out.println("DONE");
 
 	    return null;
 	}

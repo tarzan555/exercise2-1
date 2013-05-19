@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.muc13_02_bachnigsch.bt.ConnectedThread;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -38,6 +40,7 @@ import android.widget.Toast;
  * @author Maximilian Nigsch
  * 
  */
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
 public class ListBTServerActivity extends Activity {
 
     // Class-Name for debug output
@@ -54,9 +57,9 @@ public class ListBTServerActivity extends Activity {
 
     /**
      * BroadcastReceiver handling Bluetooth-Broadcasts:
-     * 	ACTION_FOUND: adds devices to list of discovered devices
-     *  ACTION_DISCOVERY_FINISHED: starts fetching of UUIDs
-     *  ACTION_UUID: compares UUIDs to GameUUID
+     * 	ACTION_FOUND: adds devices to list of discovered devices 
+     * 	ACTION_DISCOVERY_FINISHED: starts fetching of UUIDs 
+     * 	ACTION_UUID: compares UUIDs to GameUUID
      */
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 	private static final String TAG = "ListBTServerActivity-BroadcastReceiver";
@@ -77,7 +80,8 @@ public class ListBTServerActivity extends Activity {
 			"Found " + device.getName() + " ["
 				+ device.getAddress() + "]");
 
-		if(!mDiscoveredDevices.contains(device)) mDiscoveredDevices.add(device);
+		if (!mDiscoveredDevices.contains(device))
+		    mDiscoveredDevices.add(device);
 	    }
 
 	    // after discovery finished => start scanning for UUIDs
@@ -100,18 +104,21 @@ public class ListBTServerActivity extends Activity {
 			.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 		Parcelable[] uuidExtra = intent
 			.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
-		
+
 		Log.v(TAG, "Received UUIDs from " + device.getName() + " => "
 			+ uuidExtra);
-		
+
 		for (int i = 0; uuidExtra != null && i < uuidExtra.length; i++) {
 		    if (uuidExtra[i].toString().equals(
 			    StartingServerActivity.GAMEUUID)) {
-			mArrayAdapter.add(device.getName() + "\n"
-				+ device.getAddress());
 
-			// add bluetooth device to list
-			mBTDevices.add(device);
+			if (!mBTDevices.contains(device)) {
+			    mArrayAdapter.add(device.getName() + "\n"
+				    + device.getAddress());
+
+			    // add bluetooth device to list
+			    mBTDevices.add(device);
+			}
 
 		    }
 
@@ -282,7 +289,6 @@ public class ListBTServerActivity extends Activity {
     }
 
     private class ConnectTask extends AsyncTask<BluetoothDevice, Void, Void> {
-
 	@Override
 	protected void onPostExecute(Void result) {
 	    // call super-method
@@ -330,6 +336,8 @@ public class ListBTServerActivity extends Activity {
 
 	    // TODO: implement
 	    // manageConnectedSocket(mmSocket);
+	    ConnectedThread ct = new ConnectedThread(mmSocket);
+	    ct.start();
 
 	    callGameActivity();
 
