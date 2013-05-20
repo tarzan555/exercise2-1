@@ -34,6 +34,8 @@ public class StartingServerActivity extends Activity {
     // static field for UUID of this app
     public static final String GAMEUUID = "4080ad8d-8ba2-4846-8803-a3206a8975be";
 
+    public static ConnectedThread ct = null;
+
     private final int REQUEST_DISCOVERABLE_BT = 23;
 
     private TextView statusText;
@@ -156,6 +158,12 @@ public class StartingServerActivity extends Activity {
 	}
     }
 
+    // start game activity
+    public void callGameActivity() {
+	Intent intent = new Intent(this, GameActivity.class);
+	startActivity(intent);
+    }
+
     /**
      * Class for handling BT-Server
      * 
@@ -185,7 +193,7 @@ public class StartingServerActivity extends Activity {
 		tmp = mBTAdapter.listenUsingRfcommWithServiceRecord(
 			"MUCubigame", UUID.fromString(GAMEUUID));
 	    } catch (IOException e) {
-		Log.e(TAG,"Failed to start server");
+		Log.e(TAG, "Failed to start server");
 	    }
 	    mBTServerSocket = tmp;
 
@@ -199,12 +207,12 @@ public class StartingServerActivity extends Activity {
 		}
 		// If a connection was accepted
 		if (socket != null) {
-		    // Do work to manage the connection (in a separate thread)
-		    ConnectedThread ct = new ConnectedThread(socket);
-		    Log.v(TAG, "Trying to send something...");
-		    ct.write(new String("HalliHallo"));
-		    // TODO: implement
-		    
+		    // manage the connection (in a separate thread)
+		    ct = new ConnectedThread(socket);
+
+		    // let the games begin
+		    callGameActivity();
+
 		    try {
 			mBTServerSocket.close();
 		    } catch (IOException e) {

@@ -42,9 +42,10 @@ import android.widget.Toast;
  */
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
 public class ListBTServerActivity extends Activity {
-
     // Class-Name for debug output
     private static final String TAG = "ListBTServerActivity";
+    
+    public static ConnectedThread ct = null;
 
     private BluetoothAdapter mBTAdapter;
     private final int REQUEST_ENABLE_BT = 17;
@@ -332,13 +333,10 @@ public class ListBTServerActivity extends Activity {
 		return null;
 	    }
 
-	    // Do work to manage the connection (in a separate thread)
-
-	    // TODO: implement
-	    // manageConnectedSocket(mmSocket);
-	    ConnectedThread ct = new ConnectedThread(mmSocket);
-	    ct.start();
-
+	    // manage the connection (in a separate thread)
+	    ct = new ConnectedThread(mmSocket);
+	    
+	    // let the games begin :-)
 	    callGameActivity();
 
 	    return null;
