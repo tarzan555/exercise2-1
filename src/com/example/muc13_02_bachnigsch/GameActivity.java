@@ -70,10 +70,13 @@ public class GameActivity extends Activity {
     private String receivedGestureNames;
 
     /**
+     * @deprecated method was used for debuging purposes
+     * 
      * method called on button "Gestentest" clicked
      * 
      * @param view
      */
+    @Deprecated
     public void gestureTest(View view) {
 	textView2 = (TextView) findViewById(R.id.textView2);
 	textView2
@@ -84,8 +87,8 @@ public class GameActivity extends Activity {
      * Game Logic
      */
 
-    int points;
-    int player;
+    private int points;
+    private int player;
 
     public void startGame(View view) {
 
