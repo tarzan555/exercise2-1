@@ -1,16 +1,15 @@
 package com.example.muc13_02_bachnigsch;
 
-import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.view.Menu;
+import android.util.Log;
 import de.dfki.ccaal.gestures.Distribution;
 import de.dfki.ccaal.gestures.IGestureRecognitionListener;
 import de.dfki.ccaal.gestures.IGestureRecognitionService;
@@ -20,104 +19,138 @@ import de.dfki.ccaal.gestures.IGestureRecognitionService;
  * @author Max Nigsch
  * @author Martin Bach
  * 
- * The Gesture activity 
- *
+ *         The Gesture handler implements all functionality needed in order to
+ *         received recognized gestures from GestureRecognitionService
+ * 
  */
 
-public class GestureHandler   {
-	
-	GameActivity gameActivity;
-	
-	//Constructor
-	public GestureHandler(GameActivity gameActivity) {
-		this.gameActivity = gameActivity;
-	}
+public class GestureHandler {
+	// class-name for debug output
+	private static final String TAG = "GestureHandler";
 
-	
+	private GameActivity gameActivity;
+	private long mTimeStamp;
+	// Map for holding pairs of timestamp and gesture accordingly
+	private TreeMap<Long, String> mTreeMap = new TreeMap<Long, String>();
+
 	/**
-	 *  Gesture Stuff
+	 * Gesture Stuff
 	 */
+	private IGestureRecognitionService mRecService;
+	private String mGestureName;
 
-	IGestureRecognitionService mRecService;
-	String gesture;
-	
-	//create gestureListener
-	IBinder mGestureListenerStub = new IGestureRecognitionListener.Stub() {
+	// create gestureListener
+	private IBinder mGestureListenerStub = new IGestureRecognitionListener.Stub() {
 		@Override
 		public void onGestureRecognized(Distribution distr) {
-			gesture = distr.getBestMatch();
-			double distance = distr.getBestDistance();
-			
+			mGestureName = distr.getBestMatch();
+			mTimeStamp = System.currentTimeMillis();
+			// put gesture name with timestamp into treemap
+			mTreeMap.put(mTimeStamp, mGestureName);
+
+			gameActivity.onGestureRecognized(mGestureName, mTimeStamp);
+
 		}
 
 		@Override
 		public void onGestureLearned(String gestureName) throws RemoteException {
-			// TODO Auto-generated method stub
-			
+			// we dont wanna do anything here
 		}
 
 		@Override
 		public void onTrainingSetDeleted(String trainingSet)
 				throws RemoteException {
-			// TODO Auto-generated method stub
-			
+			// we dont wanna do anything here
 		}
-		
 	};
-	
-	//create a service connection to the recognition service
+
+	// create a service connection to the recognition service
 	private ServiceConnection mGestureConn = new ServiceConnection() {
 		@Override
-		public void onServiceConnected(ComponentName className,	IBinder service) {
+		public void onServiceConnected(ComponentName className, IBinder service) {
 			mRecService = IGestureRecognitionService.Stub.asInterface(service);
 			try {
 				// register listener
-				mRecService.registerListener(IGestureRecognitionListener.Stub.asInterface(mGestureListenerStub));
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {			
-				// start the recognition service in recognition mode with given training set. 
-				// new performed gestures are classified with the training set as base.
+				mRecService.registerListener(IGestureRecognitionListener.Stub
+						.asInterface(mGestureListenerStub));
+				// start the recognition service in recognition mode with given
+				// training set.
 				mRecService.startClassificationMode("muc");
-				
+				Log.d(TAG, "GestureSet contains following gestures: "
+						+ mRecService.getGestureList("muc"));
+
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
 		}
 
 		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			// TODO Auto-generated method stub
-			
+		public void onServiceDisconnected(ComponentName name) {
+			// we dont wanna do anything here
 		}
+
 	};
-	
-	
-	public String getGestureName(){
-		return gesture;
+
+	// Constructor
+	public GestureHandler(GameActivity gameActivity) {
+		this.gameActivity = gameActivity;
 	}
-	
 
 	/**
-	 * Service Stuff
+	 * returns TreeMap consisting of all recognized gestures
+	 * 
+	 * @return map containing all timestamps and recognized gestures
 	 */
-	
-	
-	protected void bind() {
-		
-		// bind service
-		Intent gestureBindIntent = new Intent("de.dfki.ccaal.gestures.GESTURE_RECOGNIZER");
-		gameActivity.bindService(gestureBindIntent, mGestureConn, Context.BIND_AUTO_CREATE);
-		
+	public TreeMap<Long, String> getGesture() {
+		return mTreeMap;
 	}
-	
-	protected void unbind(){
-		// unbind service
+
+	/**
+	 * returns single string containing all gestures in past given milliseconds
+	 * 
+	 * @param timestamp
+	 * @param timeSlot
+	 *            a timeslot in milliseconds
+	 * @return string containing all gestures performed in given timeslot
+	 */
+	public String getPerformedGestures(long timestamp, long timeSlot) {
+		SortedMap<Long, String> mSubMap = mTreeMap.subMap(timestamp - timeSlot,
+				timestamp);
+		StringBuilder builder = new StringBuilder();
+		for (Long key : mSubMap.keySet()) {
+			builder.append(mSubMap.get(key) + " ");
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * method that returns last performed gesture
+	 * 
+	 * @return last performed gesture
+	 */
+	public String getLastPerformedGesture() {
+		return mTreeMap.get(mTreeMap.lastKey());
+	}
+
+	/**
+	 * binds to service of gestureRecognition stuff
+	 */
+	protected void bind() {
+		Intent gestureBindIntent = new Intent(
+				"de.dfki.ccaal.gestures.GESTURE_RECOGNIZER");
+		gameActivity.bindService(gestureBindIntent, mGestureConn,
+				Context.BIND_AUTO_CREATE);
+
+	}
+
+	/**
+	 * unbinds to service of gestureRecognition stuff
+	 */
+	protected void unbind() {
 		try {
-			mRecService.unregisterListener(IGestureRecognitionListener.Stub.asInterface(mGestureListenerStub));
+			mRecService.unregisterListener(IGestureRecognitionListener.Stub
+					.asInterface(mGestureListenerStub));
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -125,7 +158,5 @@ public class GestureHandler   {
 		mRecService = null;
 		gameActivity.unbindService(mGestureConn);
 	}
-	
-
 
 }
