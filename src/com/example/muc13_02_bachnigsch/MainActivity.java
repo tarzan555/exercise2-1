@@ -6,12 +6,22 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 
+/**
+ * 
+ * @author Martin Bach
+ * @author Maximilian Nigsch
+ * 
+ * This MainActivity was mainly used for debugging purposes, it now only redirects to ListBTServerActivity
+ *
+ */
 public class MainActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		startActivity(new Intent(this, ListBTServerActivity.class));
 	}
 
 	@Override
